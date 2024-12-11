@@ -1,28 +1,32 @@
-#' @title Single Cell Automatic Processing Engine
-#'
-#' @description 描述一下你的包在做什么事情
-#'
-#' @param input_dir 补充参数含义
-#' @param output_dir 补充参数含义
-#' @param output_plot 补充参数含义
-#' @param output_plot_format 补充参数含义
-#' @param n_features 补充参数含义
-#' @param qc_all 补充参数含义
-#' @param qc_immune 补充参数含义
-#' @param doublet_reserve 补充参数含义#'
-#'
-#' @return NULL
-#'
-#' @examples 补充使用的示例
-#'
-#' @export auto_anno
-#'
-#'
 cat("Welcome to use Single Cell Automatic Processing Engine (SCAPE) package.\n")
 cat("R version of SCAPE can be used to remove doublets and automatically annotate single cell clusters.\n\n")
 cat("SCAPE was written by Guo X. et al. from Zhoulab.\n")
-cat("All copyrights reserved. © 2024 Zhoulab.\n\n")
+cat("All copyrights reserved. \u00A9 2024 Zhoulab.\n\n")
 
+#' auto_anno
+#' @title auto_anno
+#'
+#' @import dplyr
+#' @import tibble
+#' @import magrittr
+#' @import tidyr
+#' @import ggplot2
+#' @import Seurat
+#'
+#' @description todo
+#'
+#' @param input_dir todo
+#' @param output_dir todo
+#' @param output_plot todo
+#' @param output_plot_format todo
+#' @param n_features todo
+#' @param qc_all todo
+#' @param qc_immune todo
+#' @param doublet_reserve todo
+#'
+#' @return NULL
+#'
+#' @export
 auto_anno = function(input_dir = NULL,
                      output_dir = NULL,
                      output_plot = TRUE,
@@ -32,21 +36,14 @@ auto_anno = function(input_dir = NULL,
                      qc_immune = 5,
                      doublet_reserve = FALSE) {
 
-  require(tibble)
-  require(magrittr)
-  require(dplyr)
-  require(tidyr)
-  require(ggplot2)
-  require(Seurat)
-
   #####reading parameters##########################################################
-  if(is.null(input_dir)) {cat("Error: `input_dir` parameter cannot be empty. Please type in a valid path.\n"); break}
-  if(!dir.exists(input_dir)) {cat("Error: Please type in a valid `input_dir` path.\n"); break}
+  if(is.null(input_dir)) {cat("Error: `input_dir` parameter cannot be empty. Please type in a valid path.\n"); return()}
+  if(!dir.exists(input_dir)) {cat("Error: Please type in a valid `input_dir` path.\n"); return()}
   if(is.null(output_dir)) {
     dir.create(path = paste0(getwd(), "/SCAPE_output"))
     output_dir = paste0(getwd(), "/SCAPE_output")
   }
-  if(all(!is.null(output_dir), !dir.exists(output_dir))) {cat("Error: Please type in a valid `output_dir` path.\n"); break}
+  if(all(!is.null(output_dir), !dir.exists(output_dir))) {cat("Error: Please type in a valid `output_dir` path.\n"); return()}
   cat("================================================================================\n\n")
   cat("Single cell matrices are reading from:", input_dir, "\n")
   cat("Output files of this SCAPE run will be located in:", output_dir, "\n")
@@ -407,5 +404,5 @@ auto_anno = function(input_dir = NULL,
   cat("================================================================================\n\n")
   cat("All progressions have been completed. Thank you for using SCAPE.\n\n")
   cat("Please cite SCAPE while publishing your papers.\n")
-  cat("© 2024 Zhoulab. All rights reserved.\n")
+  cat("\u00A9 2024 Zhoulab. All rights reserved.\n")
 }
