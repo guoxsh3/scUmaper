@@ -1,14 +1,17 @@
 Package: SCAPE
 Type: Package
-Title: What the Package Does (Title Case)
+Title: Single Cell Automatic Processing Engine, automatically remove doublets and annotate single cell clusters
 Version: 0.1.0
-Author: Guo X.
-Maintainer: The package maintainer <yourself@somewhere.net>
-Description: More about what it does (maybe more than one line)
-    Use four spaces when indenting paragraphs within the Description.
-License: GPL-2
+Author: Guo X., Huang J., Wu Z., Zhou G.
+Maintainer: Zhou G. <zhougshi@mail2.sysu.edu.cn>
+Description: Single Cell Automatic Processing Engine (SCAPE) package, is designed for helping researchers with less experience in bioinformatics to process single cell sequences data. 
+    SCAPE can automatically remove doublets and annotate cell clusters with high reliability by supervising biological markers, which are bases of single cell sequence analyses.
+    Raw gene expression matrices of single cell sequences can be directly used to analyze, avoiding errors due to inappropriate intermediate procedures.
+    Please notice that currently only samples from Homo sapiens can be used by SCAPE, meanwhile the gene names used should be Gene Symbol.
+    All copyrights reserved. © 2025 Zhoulab.
+License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
 Imports:
-  tibble,magrittr,dplyr,tidyr,ggplot2,Seurat
+  tibble,dplyr,grDevices,ggplot2,Seurat,SeuratObject
 RoxygenNote: 7.3.2

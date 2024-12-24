@@ -1,40 +1,41 @@
 cat("Welcome to use Single Cell Automatic Processing Engine (SCAPE) package.\n")
-cat("R version of SCAPE can be used to remove doublets and automatically annotate single cell clusters.\n\n")
-cat("SCAPE was written by Guo X. et al. from Zhoulab.\n")
-cat("All copyrights reserved. \u00A9 2024 Zhoulab.\n\n")
+cat("SCAPE package can be used to remove doublets and annotate single cell clusters automatically.\n\n")
+cat("This package was written by Guo X. et al. from Zhoulab.\n")
+cat("All copyrights reserved. \u00A9 2025 Zhoulab.\n\n")
 
-#' auto_anno
-#' @title auto_anno
+#' run_scape_from_matrix
+#' @title run_scape_from_matrix
 #'
 #' @import dplyr
 #' @import tibble
-#' @import magrittr
-#' @import tidyr
+#' @import grDevices
 #' @import ggplot2
 #' @import Seurat
+#' @import SeuratObject
 #'
-#' @description todo
+#' @description run_scape_from_matrix() is a function for executing SCAPE from raw single cell gene expression matrices.
 #'
-#' @param input_dir todo
-#' @param output_dir todo
-#' @param output_plot todo
-#' @param output_plot_format todo
-#' @param n_features todo
-#' @param qc_all todo
-#' @param qc_immune todo
-#' @param doublet_reserve todo
+#' @param input_dir Path of the folder storing raw single cell gene expression matrices. This path should include several folders named by the samples, which should include 3 files named "barcodes.tsv.gz", "features.tsv.gz", and "matrix.mtx.gz".
+#' @param output_dir Path to store output files, defaults to create a new folder named "SCAPE_output" under working directory.
+#' @param output_plot Whether outputting UMAP plots or not, defaults to TRUE.
+#' @param output_plot_format Format of outputting UMAP plots, should be "png" or "pdf", defaults to "png".
+#' @param n_features Number of feature genes when clustering, defaults to 2000.
+#' @param qc_all Quality control standard of all cells, the cells above how many percentage of mitochondrial gene expression will be removed, defaults to 25.
+#' @param qc_immune Quality control standard of immune cells, the cells above how many percentage of mitochondrial gene expression will be removed, defaults to 5.
+#' @param doublet_reserve Whether reserving doublet cells as another Seurat object, defaults to FALSE.
 #'
 #' @return NULL
 #'
 #' @export
-auto_anno = function(input_dir = NULL,
-                     output_dir = NULL,
-                     output_plot = TRUE,
-                     output_plot_format = "png",
-                     n_features = 2000,
-                     qc_all = 25,
-                     qc_immune = 5,
-                     doublet_reserve = FALSE) {
+
+run_scape_from_matrix = function(input_dir = NULL,
+                                 output_dir = NULL,
+                                 output_plot = TRUE,
+                                 output_plot_format = "png",
+                                 n_features = 2000,
+                                 qc_all = 25,
+                                 qc_immune = 5,
+                                 doublet_reserve = FALSE) {
 
   #####reading parameters##########################################################
   if(is.null(input_dir)) {cat("Error: `input_dir` parameter cannot be empty. Please type in a valid path.\n"); return()}
@@ -71,10 +72,10 @@ auto_anno = function(input_dir = NULL,
   sc = NULL
   for (each in input.list) {
     cat("Reading", each, "\n")
-    temp = Read10X(paste(input_dir, each, sep = "/")) %>%
-      CreateSeuratObject(project = each, min.cells = 3, min.features = 200) %>%
-      RenameCells(new.names = paste(each, rownames(.@meta.data), sep = "_"))
-    temp[["percent.mt"]] = PercentageFeatureSet(temp, pattern = "^MT-")
+    temp = Seurat::Read10X(paste(input_dir, each, sep = "/")) %>%
+      Seurat::CreateSeuratObject(project = each, min.cells = 3, min.features = 200) %>%
+      SeuratObject::RenameCells(new.names = paste(each, rownames(.@meta.data), sep = "_"))
+    temp[["percent.mt"]] = Seurat::PercentageFeatureSet(temp, pattern = "^MT-")
     temp %<>% subset(percent.mt < qc_all) %>% subset(nFeature_RNA > 200 & nFeature_RNA < 6000) ###Qualification
     if (is.null(sc)) {
       sc = temp
@@ -94,24 +95,24 @@ auto_anno = function(input_dir = NULL,
   cat("================================================================================\n\n")
   cat("Start preliminarily annotating.\n\n")
 
-  sc %<>% JoinLayers() %>%
-    NormalizeData(verbose = F) %>%
-    FindVariableFeatures(nfeatures = n_features, verbose = F) %>%
-    ScaleData(verbose = F) %>%
-    RunPCA(features = setdiff(x = VariableFeatures(.), y = grep("^MT-|^RP[SL]", VariableFeatures(.), value = T)), verbose = F) %>%
-    RunUMAP(reduction = "pca", dims = 1:20, verbose = F) %>%
-    FindNeighbors(reduction = "pca", dims = 1:20, verbose = F)
+  sc %<>% SeuratObject::JoinLayers() %>%
+    Seurat::NormalizeData(verbose = F) %>%
+    Seurat::FindVariableFeatures(nfeatures = n_features, verbose = F) %>%
+    Seurat::ScaleData(verbose = F) %>%
+    Seurat::RunPCA(features = setdiff(x = VariableFeatures(.), y = grep("^MT-|^RP[SL]", VariableFeatures(.), value = T)), verbose = F) %>%
+    Seurat::RunUMAP(reduction = "pca", dims = 1:20, verbose = F) %>%
+    Seurat::FindNeighbors(reduction = "pca", dims = 1:20, verbose = F)
 
   run_res = 0.05
   repeat {
-    sc %<>% FindClusters(resolution = run_res, verbose = F)
+    sc %<>% Seurat::FindClusters(resolution = run_res, verbose = F)
     if (sc@meta.data$seurat_clusters %>% levels() %>% length() < 8 & run_res < 5) {
       run_res = run_res + 0.05
       gc()
       next
     }
 
-    run_markers = FindAllMarkers(sc, only.pos = TRUE, min.pct = 0.25, logfc.threshold = 0.25, verbose = F)
+    run_markers = Seurat::FindAllMarkers(sc, only.pos = TRUE, min.pct = 0.25, logfc.threshold = 0.25, verbose = F)
     sc$cluster = NA
 
     for (temp.ident in levels(sc$seurat_clusters)) {
@@ -155,7 +156,7 @@ auto_anno = function(input_dir = NULL,
   rm(temp, sc, each)
   gc()
 
-  ref.df %<>% column_to_rownames(var = "cell_types")
+  ref.df %<>% tibble::column_to_rownames(var = "cell_types")
 
   sc = NULL
   dbl = NULL
@@ -176,17 +177,17 @@ auto_anno = function(input_dir = NULL,
     }
 
     if (each != "undefined") temp %<>% subset(percent.mt < ref.df[each, "mt_threshold"])
-    temp %<>% NormalizeData() %>%
-      FindVariableFeatures(nfeatures = 2000, verbose = F) %>%
-      ScaleData(verbose = F) %>%
-      RunPCA(features = setdiff(x = VariableFeatures(.), y = grep("^MT-|^RP[SL]", VariableFeatures(.), value = T)), verbose = F) %>%
-      RunUMAP(reduction = "pca", dims = 1:20, verbose = F) %>%
-      FindNeighbors(reduction = "pca", dims = 1:20, verbose = F)
+    temp %<>% Seurat::NormalizeData() %>%
+      Seurat::FindVariableFeatures(nfeatures = 2000, verbose = F) %>%
+      Seurat::ScaleData(verbose = F) %>%
+      Seurat::RunPCA(features = setdiff(x = VariableFeatures(.), y = grep("^MT-|^RP[SL]", VariableFeatures(.), value = T)), verbose = F) %>%
+      Seurat::RunUMAP(reduction = "pca", dims = 1:20, verbose = F) %>%
+      Seurat::FindNeighbors(reduction = "pca", dims = 1:20, verbose = F)
 
     ###find doublets then remove
     run_res = 1
     repeat {
-      temp %<>% FindClusters(resolution = run_res, verbose = F)
+      temp %<>% Seurat::FindClusters(resolution = run_res, verbose = F)
       gc()
       if (temp@meta.data$seurat_clusters %>% levels() %>% length() < 15 & run_res < 5) {
         run_res = run_res + 0.1
@@ -198,9 +199,9 @@ auto_anno = function(input_dir = NULL,
         break
       }
 
-      run_markers = FindAllMarkers(temp, only.pos = TRUE, min.pct = 0.25, logfc.threshold = 0.25, verbose = F) %>%
-        group_by(cluster) %>%
-        slice_head(n = 50)
+      run_markers = Seurat::FindAllMarkers(temp, only.pos = TRUE, min.pct = 0.25, logfc.threshold = 0.25, verbose = F) %>%
+        dplyr::group_by(cluster) %>%
+        dplyr::slice_head(n = 50)
 
       if (each %in% c("B/Plasma_cell", "Myeloid", "T/NK_cell")) {
         impossb.genes = ref.df[rownames(ref.df) %>% setdiff(each), "markers"] %>%
@@ -277,7 +278,7 @@ auto_anno = function(input_dir = NULL,
   gc()
 
   if (!is.null(dbl)) {
-    dbl %<>% JoinLayers()
+    dbl %<>% SeuratObject::JoinLayers()
     cat("\nTotally", ncol(dbl), "possible doublet cells have been removed.\n")
     if (doublet_reserve) {
       saveRDS(dbl, paste0(output_dir, "/SCAPE_removed_doublet_seurat.rds"))
@@ -294,25 +295,25 @@ auto_anno = function(input_dir = NULL,
   cat("================================================================================\n\n")
   cat("Start final annotating.\n\n")
 
-  sc %<>% JoinLayers() %>%
-    NormalizeData(verbose = F) %>%
-    FindVariableFeatures(nfeatures = n_features, verbose = F) %>%
-    ScaleData(verbose = F) %>%
-    RunPCA(features = setdiff(x = VariableFeatures(.), y = grep("^MT-|^RP[SL]", VariableFeatures(.), value = T)), verbose = F) %>%
-    RunUMAP(reduction = "pca", dims = 1:20, verbose = F) %>%
-    FindNeighbors(reduction = "pca", dims = 1:20, verbose = F)
+  sc %<>% SeuratObject::JoinLayers() %>%
+    Seurat::NormalizeData(verbose = F) %>%
+    Seurat::FindVariableFeatures(nfeatures = n_features, verbose = F) %>%
+    Seurat::ScaleData(verbose = F) %>%
+    Seurat::RunPCA(features = setdiff(x = VariableFeatures(.), y = grep("^MT-|^RP[SL]", VariableFeatures(.), value = T)), verbose = F) %>%
+    Seurat::RunUMAP(reduction = "pca", dims = 1:20, verbose = F) %>%
+    Seurat::FindNeighbors(reduction = "pca", dims = 1:20, verbose = F)
   gc()
 
-  ref.df %<>% rownames_to_column(var = "cell_types")
+  ref.df %<>% tibble::rownames_to_column(var = "cell_types")
   run_res = 0.05
   repeat {
-    sc %<>% FindClusters(resolution = run_res, verbose = F)
+    sc %<>% Seurat:FindClusters(resolution = run_res, verbose = F)
     if (sc@meta.data$seurat_clusters %>% levels() %>% length() < 8 & run_res < 5) {
       run_res = run_res + 0.05
       next
     }
 
-    run_markers = FindAllMarkers(sc, only.pos = TRUE, min.pct = 0.25, logfc.threshold = 0.25, verbose = F)
+    run_markers = Seurat:FindAllMarkers(sc, only.pos = TRUE, min.pct = 0.25, logfc.threshold = 0.25, verbose = F)
     sc$cluster = NA
 
     for (temp.ident in levels(sc$seurat_clusters)) {
@@ -339,7 +340,7 @@ auto_anno = function(input_dir = NULL,
   }
 
   sc$cluster %<>% factor(levels = c("T/NK_cell", "B/Plasma_cell", "Myeloid", "Fibroblast", "Endothelial_cell", "Epithelial_cell", "undefined"))
-  Idents(sc) = sc$cluster
+  Seurat::Idents(sc) = sc$cluster
 
   file.remove(list.files(path = output_dir, pattern = "SCAPE_temp_.*\\.rds", full.names = T))
   rm(list = c(ls(pattern = "^run_|^temp"), "i"))
@@ -353,46 +354,46 @@ auto_anno = function(input_dir = NULL,
   if (output_plot) {
     dir.create(path = paste0(output_dir, "/markers_plot"))
     if (output_plot_format == "pdf") {
-      temp.p = DimPlot(sc,
-                       reduction = "umap",
-                       group.by = "cluster",
-                       label = F,
-                       pt.size = .1, raster = F,
-                       cols = c("#E56F5E", "#F6C957", "#FBE8D5", "#ABD0F1", "#79CEED", "#43978F", "#B5B5B5"))
-      pdf(paste0(output_dir, "/final_umap.pdf"), height = 6, width = 7.5)
+      temp.p = Seurat::DimPlot(sc,
+                               reduction = "umap",
+                               group.by = "cluster",
+                               label = F,
+                               pt.size = .1, raster = F,
+                               cols = c("#E56F5E", "#F6C957", "#FBE8D5", "#ABD0F1", "#79CEED", "#43978F", "#B5B5B5"))
+      grDevices::pdf(paste0(output_dir, "/final_umap.pdf"), height = 6, width = 7.5)
       print(temp.p)
-      dev.off()
+      grDevices::dev.off()
 
       for (each in c("PTPRC", "CD3E", "CD79A", "MS4A1", "MZB1", "IGHG1", "IGHA1", "CD68", "CSF3R",
                      "EPCAM", "PECAM1", "COL1A1", "ACTA2")) {
-        temp.p = FeaturePlot(sc,
-                             features = each,
-                             cols = c("lightgrey","red"),
-                             pt.size = 0.1,
-                             raster = F,
-                             ncol = 1)
-        pdf(paste0(output_dir, "/markers_plot/", each, "_umap.pdf"), height = 6, width = 6.5)
+        temp.p = Seurat::FeaturePlot(sc,
+                                     features = each,
+                                     cols = c("lightgrey","red"),
+                                     pt.size = 0.1,
+                                     raster = F,
+                                     ncol = 1)
+        grDevices::pdf(paste0(output_dir, "/markers_plot/", each, "_umap.pdf"), height = 6, width = 6.5)
         print(temp.p)
-        dev.off()
+        grDevices::dev.off()
       }
     } else if(output_plot_format == "png") {
-      temp.p = DimPlot(sc,
-                       reduction = "umap",
-                       group.by = "cluster",
-                       label = F,
-                       pt.size = .1, raster = F,
-                       cols = c("#E56F5E", "#F6C957", "#FBE8D5", "#ABD0F1", "#79CEED", "#43978F", "#B5B5B5"))
-      ggsave(filename = paste0(output_dir, "/final_umap.png"), plot = temp.p, height = 6, width = 7.5)
+      temp.p = Seurat::DimPlot(sc,
+                               reduction = "umap",
+                               group.by = "cluster",
+                               label = F,
+                               pt.size = .1, raster = F,
+                               cols = c("#E56F5E", "#F6C957", "#FBE8D5", "#ABD0F1", "#79CEED", "#43978F", "#B5B5B5"))
+      ggplot2::ggsave(filename = paste0(output_dir, "/final_umap.png"), plot = temp.p, height = 6, width = 7.5)
 
       for (each in c("PTPRC", "CD3E", "CD79A", "MS4A1", "MZB1", "IGHG1", "IGHA1", "CD68", "CSF3R",
                      "EPCAM", "PECAM1", "COL1A1", "ACTA2")) {
-        temp.p = FeaturePlot(sc,
-                             features = each,
-                             cols = c("lightgrey","red"),
-                             pt.size = 0.1,
-                             raster = F,
-                             ncol = 1)
-        ggsave(paste0(output_dir, "/markers_plot/", each, "_umap.png"), plot = temp.p, height = 6, width = 6.5)
+        temp.p = Seurat::FeaturePlot(sc,
+                                     features = each,
+                                     cols = c("lightgrey","red"),
+                                     pt.size = 0.1,
+                                     raster = F,
+                                     ncol = 1)
+        ggplot2::ggsave(paste0(output_dir, "/markers_plot/", each, "_umap.png"), plot = temp.p, height = 6, width = 6.5)
       }
     }
     cat("Final umaps have been successfully saved at:", paste0(output_dir, "/markers_plot"), "\n\n")
@@ -404,5 +405,6 @@ auto_anno = function(input_dir = NULL,
   cat("================================================================================\n\n")
   cat("All progressions have been completed. Thank you for using SCAPE.\n\n")
   cat("Please cite SCAPE while publishing your papers.\n")
-  cat("\u00A9 2024 Zhoulab. All rights reserved.\n")
+  cat("\u00A9 2025 Zhoulab. All rights reserved.\n")
 }
+
