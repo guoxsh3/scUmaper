@@ -1,17 +1,20 @@
-Package: SCAPE
+Package: scUmaper
 Type: Package
-Title: Single Cell Automatic Processing Engine, automatically remove doublets and annotate single cell clusters
+Title: Single Cell Utility Matrices Processing Engine in R, Automatically Remove Doublets and Annotate Single Cell Clusters
 Version: 0.1.0
-Author: Guo X., Huang J., Wu Z., Zhou G.
-Maintainer: Zhou G. <zhougshi@mail2.sysu.edu.cn>
-Description: Single Cell Automatic Processing Engine (SCAPE) package, is designed for helping researchers with less experience in bioinformatics to process single cell sequences data. 
-    SCAPE can automatically remove doublets and annotate cell clusters with high reliability by supervising biological markers, which are bases of single cell sequence analyses.
+Authors@R: c(person(given="Xushun",family="Guo",role="aut"),
+  person(given="Jinzhe",family="Huang",role="aut"),
+  person(given="Z.",family="Wu",role="aut"),
+  person(given="Gaoshi",family="Zhou",role=c("aut","cre"),email="zhougshi@mail2.sysu.edu.cn"))
+Maintainer: Gaoshi Zhou <zhougshi@mail2.sysu.edu.cn>
+Description: Single Cell Utility Matrices Processing Engine in R (scUmaper) package, is designed for helping researchers with less experience in bioinformatics to process single cell sequences data. 
+    scUmaper can automatically remove doublets and annotate cell clusters with high reliability by supervising biological markers, which are bases of single cell sequence analyses.
     Raw gene expression matrices of single cell sequences can be directly used to analyze, avoiding errors due to inappropriate intermediate procedures.
-    Please notice that currently only samples from Homo sapiens can be used by SCAPE, meanwhile the gene names used should be Gene Symbol.
+    Please notice that currently only samples from Homo sapiens can be used by scUmaper, meanwhile the gene names used should be Gene Symbol.
     All copyrights reserved. © 2025 Zhoulab.
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
 Imports:
-  tibble,dplyr,grDevices,ggplot2,Seurat,SeuratObject
+  tibble,dplyr,grDevices,ggplot2,Seurat (>= 5.0.0),SeuratObject (>= 5.0.0)
 RoxygenNote: 7.3.2

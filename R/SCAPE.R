@@ -1,10 +1,10 @@
-cat("Welcome to use Single Cell Automatic Processing Engine (SCAPE) package.\n")
-cat("SCAPE package can be used to remove doublets and annotate single cell clusters automatically.\n\n")
-cat("This package was written by Guo X. et al. from Zhoulab.\n")
-cat("All copyrights reserved. \u00A9 2025 Zhoulab.\n\n")
+cat("\u001b[31mWelcome to use Single Cell Utility Matrices Processing Engine in R (scUmaper) package.\u001b[0m\n")
+cat("\u001b[31mscUmaper package can be used to remove doublets and annotate single cell clusters automatically.\u001b[0m\n\n")
+cat("\u001b[31mThis package was written by Guo X. et al. from Zhoulab.\u001b[0m\n")
+cat("\u001b[31mAll copyrights reserved. \u00A9 2025 Zhoulab.\u001b[0m\n\n")
 
-#' run_scape_from_matrix
-#' @title run_scape_from_matrix
+#' run_scumaper
+#' @title run_scumaper
 #'
 #' @import dplyr
 #' @import tibble
@@ -13,10 +13,10 @@ cat("All copyrights reserved. \u00A9 2025 Zhoulab.\n\n")
 #' @import Seurat
 #' @import SeuratObject
 #'
-#' @description run_scape_from_matrix() is a function for executing SCAPE from raw single cell gene expression matrices.
+#' @description run_scumaper() is a function for executing scUmaper from raw single cell gene expression matrices.
 #'
 #' @param input_dir Path of the folder storing raw single cell gene expression matrices. This path should include several folders named by the samples, which should include 3 files named "barcodes.tsv.gz", "features.tsv.gz", and "matrix.mtx.gz".
-#' @param output_dir Path to store output files, defaults to create a new folder named "SCAPE_output" under working directory.
+#' @param output_dir Path to store output files, defaults to create a new folder named "scUmaper_output" under working directory.
 #' @param output_plot Whether outputting UMAP plots or not, defaults to TRUE.
 #' @param output_plot_format Format of outputting UMAP plots, should be "png" or "pdf", defaults to "png".
 #' @param n_features Number of feature genes when clustering, defaults to 2000.
@@ -28,35 +28,35 @@ cat("All copyrights reserved. \u00A9 2025 Zhoulab.\n\n")
 #'
 #' @export
 
-run_scape_from_matrix = function(input_dir = NULL,
-                                 output_dir = NULL,
-                                 output_plot = TRUE,
-                                 output_plot_format = "png",
-                                 n_features = 2000,
-                                 qc_all = 25,
-                                 qc_immune = 5,
-                                 doublet_reserve = FALSE) {
+run_scumaper = function(input_dir = NULL,
+                        output_dir = NULL,
+                        output_plot = TRUE,
+                        output_plot_format = "png",
+                        n_features = 2000,
+                        qc_all = 25,
+                        qc_immune = 5,
+                        doublet_reserve = FALSE) {
 
   #####reading parameters##########################################################
   if(is.null(input_dir)) {cat("Error: `input_dir` parameter cannot be empty. Please type in a valid path.\n"); return()}
   if(!dir.exists(input_dir)) {cat("Error: Please type in a valid `input_dir` path.\n"); return()}
   if(is.null(output_dir)) {
-    dir.create(path = paste0(getwd(), "/SCAPE_output"))
-    output_dir = paste0(getwd(), "/SCAPE_output")
+    dir.create(path = paste0(getwd(), "/scUmaper_output"))
+    output_dir = paste0(getwd(), "/scUmaper_output")
   }
   if(all(!is.null(output_dir), !dir.exists(output_dir))) {cat("Error: Please type in a valid `output_dir` path.\n"); return()}
   cat("================================================================================\n\n")
   cat("Single cell matrices are reading from:", input_dir, "\n")
-  cat("Output files of this SCAPE run will be located in:", output_dir, "\n")
+  cat("Output files of this scUmaper run will be located in:", output_dir, "\n")
   cat("Feature number of clustering major groups is", n_features, "\n")
   cat("Quality control standard of all cells is less than", qc_all, "percent mitochondrial gene expression.", "\n")
   cat("Quality control standard of immune cells is less than", qc_immune, "percent mitochondrial gene expression.", "\n")
-  if (!(output_plot_format %in% c("png", "pdf"))) {output_plot = F; cat("Warning: format", output_plot_format, "is not supported by SCAPE, only `pdf` or `png` are supported.\n")}
+  if (!(output_plot_format %in% c("png", "pdf"))) {output_plot = F; cat("Warning: format", output_plot_format, "is not supported by scUmaper, only `pdf` or `png` are supported.\n")}
   if (!output_plot) cat("UMAP plots will not be created in this run.\n")
   if (doublet_reserve) cat("The doublets deleted will be kept in:", output_dir, "\n")
-  cat("\n", "Start running SCAPE.\n\n")
+  cat("\n", "\u001b[31mStart running scUmaper.\u001b[0m\n\n", sep = "")
 
-  cat("================================================================================\n\n")
+  cat("\u001b[31m================================================================================\u001b[0m\n\n")
   ref.df = data.frame("cell_types" = c("B/Plasma_cell", "Myeloid", "T/NK_cell", "Fibroblast", "Endothelial_cell", "Epithelial_cell"),
                       "markers" = c("CD79A;CD79B;CD19;MS4A1;MZB1;IGHG1;IGHA1",
                                     "CD68;CSF3R;TPSAB1",
@@ -76,7 +76,7 @@ run_scape_from_matrix = function(input_dir = NULL,
       Seurat::CreateSeuratObject(project = each, min.cells = 3, min.features = 200) %>%
       SeuratObject::RenameCells(new.names = paste(each, rownames(.@meta.data), sep = "_"))
     temp[["percent.mt"]] = Seurat::PercentageFeatureSet(temp, pattern = "^MT-")
-    temp %<>% subset(percent.mt < qc_all) %>% subset(nFeature_RNA > 200 & nFeature_RNA < 6000) ###Qualification
+    temp = temp %>% subset(percent.mt < qc_all) %>% subset(nFeature_RNA > 200 & nFeature_RNA < 6000) ###Qualification
     if (is.null(sc)) {
       sc = temp
     } else {
@@ -93,9 +93,9 @@ run_scape_from_matrix = function(input_dir = NULL,
 
   #####add preliminary annotation##############################################
   cat("================================================================================\n\n")
-  cat("Start preliminarily annotating.\n\n")
+  cat("\u001b[31mStart preliminarily annotating.\u001b[0m\n\n")
 
-  sc %<>% SeuratObject::JoinLayers() %>%
+  sc = sc %>% SeuratObject::JoinLayers() %>%
     Seurat::NormalizeData(verbose = F) %>%
     Seurat::FindVariableFeatures(nfeatures = n_features, verbose = F) %>%
     Seurat::ScaleData(verbose = F) %>%
@@ -105,7 +105,7 @@ run_scape_from_matrix = function(input_dir = NULL,
 
   run_res = 0.05
   repeat {
-    sc %<>% Seurat::FindClusters(resolution = run_res, verbose = F)
+    sc = sc %>% Seurat::FindClusters(resolution = run_res, verbose = F)
     if (sc@meta.data$seurat_clusters %>% levels() %>% length() < 8 & run_res < 5) {
       run_res = run_res + 0.05
       gc()
@@ -133,7 +133,7 @@ run_scape_from_matrix = function(input_dir = NULL,
       next
     }
 
-    sc@meta.data %<>% .[,!grepl(pattern = "^RNA_snn_res|seurat_clusters", x = colnames(.))]
+    sc@meta.data = sc@meta.data %>% .[,!grepl(pattern = "^RNA_snn_res|seurat_clusters", x = colnames(.))]
     cat("Final clustering resolution for preliminary annotation is", run_res, "\n\n")
     break
   }
@@ -144,25 +144,25 @@ run_scape_from_matrix = function(input_dir = NULL,
   cat("================================================================================\n\n")
 
   #####remove doublets########################################################
-  cat("Start seeking for doublets.\n\n")
+  cat("\u001b[31mStart seeking for doublets\u001b[0m.\n\n")
 
   for (each in unique(sc$cluster)) {
     temp = subset(sc, cluster == each)
     gc()
-    each %<>% gsub(pattern = "/", replacement = "&", x = .) #replace '/'
-    saveRDS(temp, paste0(output_dir, "/SCAPE_temp_", each, ".rds"))
+    each = each %>% gsub(pattern = "/", replacement = "&", x = .) #replace '/'
+    saveRDS(temp, paste0(output_dir, "/scUmaper_temp_", each, ".rds"))
   }
 
   rm(temp, sc, each)
   gc()
 
-  ref.df %<>% tibble::column_to_rownames(var = "cell_types")
+  ref.df = ref.df %>% tibble::column_to_rownames(var = "cell_types")
 
   sc = NULL
   dbl = NULL
-  for (each in list.files(path = output_dir, pattern = "SCAPE_temp_.*\\.rds")) {
+  for (each in list.files(path = output_dir, pattern = "scUmaper_temp_.*\\.rds")) {
     temp = readRDS(paste0(output_dir, "/", each))
-    each %<>% gsub(pattern = "SCAPE_temp_|\\.rds", replacement = "", x = .) %>% gsub(pattern = "&", replacement = "/", x = .) #replace '&'
+    each = each %>% gsub(pattern = "scUmaper_temp_|\\.rds", replacement = "", x = .) %>% gsub(pattern = "&", replacement = "/", x = .) #replace '&'
     cat("\nStarting find doublet of", each, "\n\n")
 
     if (ncol(temp) < 50) { ###skip too small subclusters
@@ -176,8 +176,8 @@ run_scape_from_matrix = function(input_dir = NULL,
       next
     }
 
-    if (each != "undefined") temp %<>% subset(percent.mt < ref.df[each, "mt_threshold"])
-    temp %<>% Seurat::NormalizeData() %>%
+    if (each != "undefined") temp = temp %>% subset(percent.mt < ref.df[each, "mt_threshold"])
+    temp = temp %>% Seurat::NormalizeData() %>%
       Seurat::FindVariableFeatures(nfeatures = 2000, verbose = F) %>%
       Seurat::ScaleData(verbose = F) %>%
       Seurat::RunPCA(features = setdiff(x = VariableFeatures(.), y = grep("^MT-|^RP[SL]", VariableFeatures(.), value = T)), verbose = F) %>%
@@ -187,7 +187,7 @@ run_scape_from_matrix = function(input_dir = NULL,
     ###find doublets then remove
     run_res = 1
     repeat {
-      temp %<>% Seurat::FindClusters(resolution = run_res, verbose = F)
+      temp = temp %>% Seurat::FindClusters(resolution = run_res, verbose = F)
       gc()
       if (temp@meta.data$seurat_clusters %>% levels() %>% length() < 15 & run_res < 5) {
         run_res = run_res + 0.1
@@ -216,7 +216,7 @@ run_scape_from_matrix = function(input_dir = NULL,
             } else {
               dbl = merge(dbl, temp.dbl)
             }
-            temp %<>% subset(seurat_clusters != i) #remove doublets
+            temp = temp %>% subset(seurat_clusters != i) #remove doublets
             cat("cluster", i, "of", each, "is removed.\n")
           }
         }
@@ -234,7 +234,7 @@ run_scape_from_matrix = function(input_dir = NULL,
             } else {
               dbl = merge(dbl, temp.dbl)
             }
-            temp %<>% subset(seurat_clusters != i) #remove doublets
+            temp = temp %>% subset(seurat_clusters != i) #remove doublets
             cat("cluster", i, "of", each, "is removed.\n")
           }
         }
@@ -256,7 +256,7 @@ run_scape_from_matrix = function(input_dir = NULL,
             } else {
               dbl = merge(dbl, temp.dbl)
             }
-            temp %<>% subset(seurat_clusters != i) #remove doublets
+            temp = temp %>% subset(seurat_clusters != i) #remove doublets
             cat("cluster", i, "of", each, "is removed.\n")
           }
         }
@@ -278,10 +278,10 @@ run_scape_from_matrix = function(input_dir = NULL,
   gc()
 
   if (!is.null(dbl)) {
-    dbl %<>% SeuratObject::JoinLayers()
+    dbl = dbl %>% SeuratObject::JoinLayers()
     cat("\nTotally", ncol(dbl), "possible doublet cells have been removed.\n")
     if (doublet_reserve) {
-      saveRDS(dbl, paste0(output_dir, "/SCAPE_removed_doublet_seurat.rds"))
+      saveRDS(dbl, paste0(output_dir, "/scUmaper_removed_doublet_seurat.rds"))
       cat(paste("Removed doublets are saved at:", paste0(output_dir, "/final_removed_doublet_seurat.rds")), "\n\n")
     }
   } else {
@@ -293,9 +293,9 @@ run_scape_from_matrix = function(input_dir = NULL,
 
   #####get final results########################################################
   cat("================================================================================\n\n")
-  cat("Start final annotating.\n\n")
+  cat("\u001b[31mStart final annotating.\u001b[0m\n\n")
 
-  sc %<>% SeuratObject::JoinLayers() %>%
+  sc = sc %>% SeuratObject::JoinLayers() %>%
     Seurat::NormalizeData(verbose = F) %>%
     Seurat::FindVariableFeatures(nfeatures = n_features, verbose = F) %>%
     Seurat::ScaleData(verbose = F) %>%
@@ -304,16 +304,16 @@ run_scape_from_matrix = function(input_dir = NULL,
     Seurat::FindNeighbors(reduction = "pca", dims = 1:20, verbose = F)
   gc()
 
-  ref.df %<>% tibble::rownames_to_column(var = "cell_types")
+  ref.df = ref.df %>% tibble::rownames_to_column(var = "cell_types")
   run_res = 0.05
   repeat {
-    sc %<>% Seurat:FindClusters(resolution = run_res, verbose = F)
+    sc = sc %>% Seurat::FindClusters(resolution = run_res, verbose = F)
     if (sc@meta.data$seurat_clusters %>% levels() %>% length() < 8 & run_res < 5) {
       run_res = run_res + 0.05
       next
     }
 
-    run_markers = Seurat:FindAllMarkers(sc, only.pos = TRUE, min.pct = 0.25, logfc.threshold = 0.25, verbose = F)
+    run_markers = Seurat::FindAllMarkers(sc, only.pos = TRUE, min.pct = 0.25, logfc.threshold = 0.25, verbose = F)
     sc$cluster = NA
 
     for (temp.ident in levels(sc$seurat_clusters)) {
@@ -333,20 +333,20 @@ run_scape_from_matrix = function(input_dir = NULL,
       next
     }
 
-    sc@meta.data %<>% .[,!grepl(pattern = "^RNA_snn_res|seurat_clusters", x = colnames(.))]
+    sc@meta.data = sc@meta.data %>% .[,!grepl(pattern = "^RNA_snn_res|seurat_clusters", x = colnames(.))]
     cat("\nLast clustering resolution for final annotation is", run_res, "\n\n")
     cat("================================================================================\n\n")
     break
   }
 
-  sc$cluster %<>% factor(levels = c("T/NK_cell", "B/Plasma_cell", "Myeloid", "Fibroblast", "Endothelial_cell", "Epithelial_cell", "undefined"))
+  sc$cluster = sc$cluster %>% factor(levels = c("T/NK_cell", "B/Plasma_cell", "Myeloid", "Fibroblast", "Endothelial_cell", "Epithelial_cell", "undefined"))
   Seurat::Idents(sc) = sc$cluster
 
-  file.remove(list.files(path = output_dir, pattern = "SCAPE_temp_.*\\.rds", full.names = T))
+  file.remove(list.files(path = output_dir, pattern = "scUmaper_temp_.*\\.rds", full.names = T))
   rm(list = c(ls(pattern = "^run_|^temp"), "i"))
   gc()
 
-  saveRDS(sc, paste0(output_dir, "/SCAPE_annotated_singlet_seurat.rds"))
+  saveRDS(sc, paste0(output_dir, "/scUmaper_annotated_singlet_seurat.rds"))
   cat("\nEventually,", ncol(sc), "singlet cells have been kept and annotated.\n")
   cat("Final processed seurat object has been successfully saved as:\n")
   cat(output_dir, "/final_annotated_singlet_seurat.rds\n\n", sep = "")
@@ -402,9 +402,8 @@ run_scape_from_matrix = function(input_dir = NULL,
   rm(list = ls())
   gc()
 
-  cat("================================================================================\n\n")
-  cat("All progressions have been completed. Thank you for using SCAPE.\n\n")
-  cat("Please cite SCAPE while publishing your papers.\n")
-  cat("\u00A9 2025 Zhoulab. All rights reserved.\n")
+  cat("\u001b[31m================================================================================\u001b[0m\n\n")
+  cat("\u001b[31mAll progressions have been completed. Thank you for using scUmaper.\u001b[0m\n\n")
+  cat("\u001b[31mPlease cite scUmaper while publishing your papers.\u001b[0m\n")
+  cat("\u001b[31m\u00A9 2025 Zhoulab. All rights reserved.\u001b[0m\n")
 }
-
