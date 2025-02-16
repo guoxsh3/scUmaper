@@ -26,7 +26,13 @@ cat("\u001b[31mAll copyrights reserved. \u00A9 2025 Zhoulab.\u001b[0m\n\n")
 #'
 #' @return NULL
 #'
+#' @examplesIf interactive()
+#' run_scumaper(input_dir = 'path/to/input', output_dir = 'path/to/output')
+#'
 #' @export
+
+### gobal variables ####
+utils::globalVariables(c("percent.mt", "nFeature_RNA", "cluster","seurat_clusters"))
 
 run_scumaper = function(input_dir = NULL,
                         output_dir = NULL,
@@ -36,7 +42,6 @@ run_scumaper = function(input_dir = NULL,
                         qc_all = 25,
                         qc_immune = 5,
                         doublet_reserve = FALSE) {
-
   #####reading parameters##########################################################
   if(is.null(input_dir)) {cat("Error: `input_dir` parameter cannot be empty. Please type in a valid path.\n"); return()}
   if(!dir.exists(input_dir)) {cat("Error: Please type in a valid `input_dir` path.\n"); return()}
