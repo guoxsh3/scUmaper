@@ -1,8 +1,9 @@
 .onAttach <- function(libname, pkgname) {
-  packageStartupMessage("\u001b[31mWelcome to use Single Cell Utility Matrices Processing Engine in R (scUmaper) package.\u001b[0m\n")
-  packageStartupMessage("\u001b[31mscUmaper package can be used to remove doublets and annotate single cell clusters automatically.\u001b[0m\n\n")
-  packageStartupMessage("\u001b[31mThis package was written by Guo X. et al. from Zhoulab.\u001b[0m\n")
-  packageStartupMessage("\u001b[31mAll copyrights reserved. \u00A9 2025 Zhoulab.\u001b[0m\n\n")
+  packageStartupMessage("\u001b[31mWelcome to use Single Cell Utility Matrices Processing Engine in R (scUmaper) package.\u001b[0m")
+  packageStartupMessage("\u001b[31mscUmaper package can be used to remove doublets and annotate single cell clusters automatically.\u001b[0m")
+  packageStartupMessage("\u001b[31mPlease notice that only tissue samples from Homo sapiens can be used by scUmaper, meanwhile the gene names used should be Gene Symbol.\u001b[0m\n")
+  packageStartupMessage("\u001b[31mThis package was written by Guo X. et al. from Zhoulab.\u001b[0m")
+  packageStartupMessage("\u001b[31mAll copyrights reserved. \u00A9 2025 Zhoulab.\u001b[0m\n")
 }
 ### gobal variables ####
 utils::globalVariables(c("percent.mt", "nFeature_RNA", "cluster","seurat_clusters"))
@@ -168,9 +169,9 @@ run_scumaper = function(input_dir = NULL,
   for (each in list.files(path = output_dir, pattern = "scUmaper_temp_.*\\.rds")) {
     temp = readRDS(paste0(output_dir, "/", each))
     each = each %>% gsub(pattern = "scUmaper_temp_|\\.rds", replacement = "", x = .) %>% gsub(pattern = "&", replacement = "/", x = .) #replace '&'
-    cat("\nStarting find doublet of", each, "\n\n")
+    cat("\nStart finding doublet of", each, "\n\n")
 
-    if (ncol(temp) < 50) { ###skip too small subclusters
+    if (ncol(temp) < 200) { ###skip too small subclusters
       cat(each, "has too few cells. No cells removed.\n\n")
       if (is.null(sc)) {
         sc = temp
