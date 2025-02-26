@@ -1,7 +1,7 @@
 Package: scUmaper
 Type: Package
 Title: Single Cell Utility Matrices Processing Engine in R, Automatically Remove Doublets and Annotate Single Cell Clusters
-Version: 0.1.3
+Version: 0.1.4
 Authors@R: c(person(given="Xushun",family="Guo",role="aut",email="guoxsh3@sina.cn"),
   person(given="Jinzhe",family="Huang",role="aut"),
   person(given="Zhuohui",family="Wu",role="aut"),
