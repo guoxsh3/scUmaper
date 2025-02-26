@@ -24,7 +24,7 @@ utils::globalVariables(c("percent.mt", "nFeature_RNA", "cluster","seurat_cluster
 #' @param output_dir Path to store output files, defaults to create a new folder named "scUmaper_output" under working directory.
 #' @param output_plot Whether outputting UMAP plots or not, defaults to TRUE.
 #' @param output_plot_format Format of outputting UMAP plots, should be "png" or "pdf", defaults to "png".
-#' @param n_features Number of feature genes when clustering, defaults to 2000.
+#' @param n_features Number of feature genes when clustering, defaults to 3000.
 #' @param qc_all Quality control standard of all cells, the cells above how many percentage of mitochondrial gene expression will be removed, defaults to 25.
 #' @param qc_immune Quality control standard of immune cells, the cells above how many percentage of mitochondrial gene expression will be removed, defaults to 5.
 #' @param doublet_reserve Whether reserving doublet cells as another Seurat object, defaults to FALSE.
@@ -39,7 +39,7 @@ run_scumaper = function(input_dir = NULL,
                         output_dir = NULL,
                         output_plot = TRUE,
                         output_plot_format = "png",
-                        n_features = 2000,
+                        n_features = 3000,
                         qc_all = 25,
                         qc_immune = 5,
                         doublet_reserve = FALSE) {
@@ -63,14 +63,14 @@ run_scumaper = function(input_dir = NULL,
   cat("\n", "\u001b[31mStart running scUmaper.\u001b[0m\n\n", sep = "")
 
   cat("\u001b[31m================================================================================\u001b[0m\n\n")
-  ref.df = data.frame("cell_types" = c("B/Plasma_cell", "Myeloid", "T/NK_cell", "Fibroblast", "Endothelial_cell", "Epithelial_cell"),
+  ref.df = data.frame("cell_types" = c("B/Plasma_cell", "Endothelial_cell", "Myeloid", "T/NK_cell", "Fibroblast", "Epithelial_cell"),
                       "markers" = c("CD79A;CD79B;CD19;MS4A1;MZB1;IGHG1;IGHA1",
+                                    "PECAM1;VWF",
                                     "CD68;CSF3R;TPSAB1",
                                     "CD3D;CD3E",
                                     "COL1A1;ACTA2;ACTG2;COL6A3",
-                                    "PECAM1;VWF",
                                     "EPCAM;KRT19;KRT8"),
-                      "mt_threshold" = c(rep(qc_immune, 3), rep(qc_all, 3)))
+                      "mt_threshold" = c(qc_immune, qc_all, qc_immune, qc_immune, qc_all, qc_all))
 
   #####read seurats##########################################################
   input.list = list.dirs(path = input_dir, recursive = F, full.names = F) %>% unlist()
@@ -365,13 +365,19 @@ run_scumaper = function(input_dir = NULL,
                                group.by = "cluster",
                                label = F,
                                pt.size = .1, raster = F,
-                               cols = c("#E56F5E", "#F6C957", "#FBE8D5", "#ABD0F1", "#79CEED", "#43978F", "#B5B5B5"))
+                               cols = c("T/NK_cell" = "#E56F5E",
+                                        "B/Plasma_cell" = "#F6C957",
+                                        "Myeloid" = "#FBE8D5",
+                                        "Fibroblast" = "#ABD0F1",
+                                        "Endothelial_cell" = "#79CEED",
+                                        "Epithelial_cell" = "#43978F",
+                                        "undefined" = "#B5B5B5"))
       grDevices::pdf(paste0(output_dir, "/final_umap.pdf"), height = 6, width = 7.5)
       print(temp.p)
       grDevices::dev.off()
 
-      for (each in c("PTPRC", "CD3E", "CD79A", "MS4A1", "MZB1", "IGHG1", "IGHA1", "CD68", "CSF3R",
-                     "EPCAM", "PECAM1", "COL1A1", "ACTA2")) {
+      for (each in c("PTPRC", "CD3E", "CD79A", "MS4A1", "MZB1", "IGHG1", "IGHA1", "CD68", "CSF3R", "KIT", "TPSAB1",
+                     "EPCAM", "KRT8", "KRT19", "PECAM1", "COL1A1", "ACTA2")) {
         temp.p = Seurat::FeaturePlot(sc,
                                      features = each,
                                      cols = c("lightgrey","red"),
@@ -388,11 +394,17 @@ run_scumaper = function(input_dir = NULL,
                                group.by = "cluster",
                                label = F,
                                pt.size = .1, raster = F,
-                               cols = c("#E56F5E", "#F6C957", "#FBE8D5", "#ABD0F1", "#79CEED", "#43978F", "#B5B5B5"))
+                               cols = c("T/NK_cell" = "#E56F5E",
+                                        "B/Plasma_cell" = "#F6C957",
+                                        "Myeloid" = "#FBE8D5",
+                                        "Fibroblast" = "#ABD0F1",
+                                        "Endothelial_cell" = "#79CEED",
+                                        "Epithelial_cell" = "#43978F",
+                                        "undefined" = "#B5B5B5"))
       ggplot2::ggsave(filename = paste0(output_dir, "/final_umap.png"), plot = temp.p, height = 6, width = 7.5)
 
-      for (each in c("PTPRC", "CD3E", "CD79A", "MS4A1", "MZB1", "IGHG1", "IGHA1", "CD68", "CSF3R",
-                     "EPCAM", "PECAM1", "COL1A1", "ACTA2")) {
+      for (each in c("PTPRC", "CD3E", "CD79A", "MS4A1", "MZB1", "IGHG1", "IGHA1", "CD68", "CSF3R", "KIT", "TPSAB1",
+                     "EPCAM", "KRT8", "KRT19", "PECAM1", "COL1A1", "ACTA2")) {
         temp.p = Seurat::FeaturePlot(sc,
                                      features = each,
                                      cols = c("lightgrey","red"),
