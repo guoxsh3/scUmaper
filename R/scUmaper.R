@@ -1,12 +1,12 @@
 .onAttach <- function(libname, pkgname) {
   packageStartupMessage("\u001b[31mWelcome to use Single Cell Utility Matrices Processing Engine in R (scUmaper) package.\u001b[0m")
-  packageStartupMessage("\u001b[31mscUmaper package can be used to remove doublets and annotate single cell clusters automatically.\u001b[0m")
+  packageStartupMessage("\u001b[31mscUmaper package can remove doublets and annotate single cell clusters automatically.\u001b[0m")
   packageStartupMessage("\u001b[31mPlease notice that only tissue samples from Homo sapiens can be used by scUmaper, meanwhile the gene names used should be Gene Symbol.\u001b[0m\n")
   packageStartupMessage("\u001b[31mThis package was written by Guo X. et al. from Zhoulab.\u001b[0m")
   packageStartupMessage("\u001b[31mAll copyrights reserved. \u00A9 2025 Zhoulab.\u001b[0m\n")
 }
 ### gobal variables ####
-utils::globalVariables(c("percent.mt", "nFeature_RNA", "cluster","seurat_clusters"))
+utils::globalVariables(c("percent.mt", "nFeature_RNA", "cluster", "seurat_clusters"))
 
 #' run_scumaper
 #' @title run_scumaper
