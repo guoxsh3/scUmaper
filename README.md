@@ -95,12 +95,12 @@ X. Guo, G. Zhou. scUmaper: An Automated Tool for Doublet Removal and Cell Type A
 
 If you have any questions or problems for code questions, please contact Xushun Guo.
 
--   Xushun Guo ([guoxsh3\@mail2.sysu.edu.cn](mailto:guoxsh3@mail2.sysu.edu.cn){.email})\
+-   Xushun Guo (guoxsh3\@mail2.sysu.edu.cn)\
     MD, Resident Doctor,\
     Zhongshan School of Medicine, Sun Yat-sen University, Canton, China.
 
 For any other further questions or requests, please contact Gaoshi Zhou, the Principle Investigator of our bioinfomatic lab.
 
--   Gaoshi Zhou ([zhougshi\@mail2.sysu.edu.cn](mailto:zhougshi@mail2.sysu.edu.cn){.email})\
+-   Gaoshi Zhou (zhougshi\@mail2.sysu.edu.cn)\
     MD, Research Associate, Resident Doctor,\
     The First Affiliated Hospital, Sun Yat-sen University, Canton, China.

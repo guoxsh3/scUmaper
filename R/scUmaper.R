@@ -288,7 +288,7 @@ run_scumaper = function(input_dir = NULL,
     cat("\nTotally", ncol(dbl), "possible doublet cells have been removed.\n")
     if (doublet_reserve) {
       saveRDS(dbl, paste0(output_dir, "/scUmaper_removed_doublet_seurat.rds"))
-      cat(paste("Removed doublets are saved at:", paste0(output_dir, "/final_removed_doublet_seurat.rds")), "\n\n")
+      cat(paste("Removed doublets are saved at:", paste0(output_dir, "/scUmaper_removed_doublet_seurat.rds")), "\n\n")
     }
   } else {
     cat("No doublet was found or removed.\n\n")
@@ -355,7 +355,7 @@ run_scumaper = function(input_dir = NULL,
   saveRDS(sc, paste0(output_dir, "/scUmaper_annotated_singlet_seurat.rds"))
   cat("\nEventually,", ncol(sc), "singlet cells have been kept and annotated.\n")
   cat("Final processed seurat object has been successfully saved as:\n")
-  cat(output_dir, "/final_annotated_singlet_seurat.rds\n\n", sep = "")
+  cat(output_dir, "/scUmaper_annotated_singlet_seurat.rds\n\n", sep = "")
 
   if (output_plot) {
     dir.create(path = paste0(output_dir, "/markers_plot"))
@@ -371,7 +371,8 @@ run_scumaper = function(input_dir = NULL,
                                         "Fibroblast" = "#ABD0F1",
                                         "Endothelial_cell" = "#79CEED",
                                         "Epithelial_cell" = "#43978F",
-                                        "undefined" = "#B5B5B5"))
+                                        "undefined" = "#B5B5B5")) +
+        theme(aspect.ratio = 1)
       grDevices::pdf(paste0(output_dir, "/final_umap.pdf"), height = 6, width = 7.5)
       print(temp.p)
       grDevices::dev.off()
@@ -383,7 +384,8 @@ run_scumaper = function(input_dir = NULL,
                                      cols = c("lightgrey","red"),
                                      pt.size = 0.1,
                                      raster = F,
-                                     ncol = 1)
+                                     ncol = 1) +
+          theme(aspect.ratio = 1)
         grDevices::pdf(paste0(output_dir, "/markers_plot/", each, "_umap.pdf"), height = 6, width = 6.5)
         print(temp.p)
         grDevices::dev.off()
@@ -400,7 +402,8 @@ run_scumaper = function(input_dir = NULL,
                                         "Fibroblast" = "#ABD0F1",
                                         "Endothelial_cell" = "#79CEED",
                                         "Epithelial_cell" = "#43978F",
-                                        "undefined" = "#B5B5B5"))
+                                        "undefined" = "#B5B5B5")) +
+        theme(aspect.ratio = 1)
       ggplot2::ggsave(filename = paste0(output_dir, "/final_umap.png"), plot = temp.p, height = 6, width = 7.5)
 
       for (each in c("PTPRC", "CD3E", "CD79A", "MS4A1", "MZB1", "IGHG1", "IGHA1", "CD68", "CSF3R", "KIT", "TPSAB1",
@@ -410,14 +413,14 @@ run_scumaper = function(input_dir = NULL,
                                      cols = c("lightgrey","red"),
                                      pt.size = 0.1,
                                      raster = F,
-                                     ncol = 1)
+                                     ncol = 1) +
+          theme(aspect.ratio = 1)
         ggplot2::ggsave(paste0(output_dir, "/markers_plot/", each, "_umap.png"), plot = temp.p, height = 6, width = 6.5)
       }
     }
     cat("Final umaps have been successfully saved at:", paste0(output_dir, "/markers_plot"), "\n\n")
   }
 
-  rm(list = ls())
   gc()
 
   cat("\u001b[31m================================================================================\u001b[0m\n\n")

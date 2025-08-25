@@ -9,7 +9,7 @@ run_scumaper(
   output_dir = NULL,
   output_plot = TRUE,
   output_plot_format = "png",
-  n_features = 2000,
+  n_features = 3000,
   qc_all = 25,
   qc_immune = 5,
   doublet_reserve = FALSE
@@ -24,7 +24,7 @@ run_scumaper(
 
 \item{output_plot_format}{Format of outputting UMAP plots, should be "png" or "pdf", defaults to "png".}
 
-\item{n_features}{Number of feature genes when clustering, defaults to 2000.}
+\item{n_features}{Number of feature genes when clustering, defaults to 3000.}
 
 \item{qc_all}{Quality control standard of all cells, the cells above how many percentage of mitochondrial gene expression will be removed, defaults to 25.}
 

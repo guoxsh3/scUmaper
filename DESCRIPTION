@@ -1,7 +1,7 @@
 Package: scUmaper
 Type: Package
 Title: Single Cell Utility Matrices Processing Engine in R
-Version: 0.1.5
+Version: 0.1.6
 Authors@R: c(person(given="Xushun",family="Guo",role="aut",email="guoxsh3@mail2.sysu.edu.cn"),
   person(given="Jinzhe",family="Huang",role="aut"),
   person(given="Zhuohui",family="Wu",role="aut"),
