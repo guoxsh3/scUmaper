@@ -19,7 +19,7 @@ scUmaper is implemented by R. Make sure your R version \>= 4.3.0. The packages b
 Download and install scUmaper:
 
 ``` r
-devtools::install("guoxsh3/scUmaper")
+devtools::install_github("guoxsh3/scUmaper")
 ```
 
 ## **Before you start**
