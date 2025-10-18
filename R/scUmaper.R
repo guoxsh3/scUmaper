@@ -1,7 +1,7 @@
 .onAttach <- function(libname, pkgname) {
   packageStartupMessage("\u001b[31mWelcome to use Single Cell Utility Matrices Processing Engine in R (scUmaper) package.\u001b[0m")
   packageStartupMessage("\u001b[31mscUmaper package can remove doublets and annotate single cell clusters automatically.\u001b[0m")
-  packageStartupMessage("\u001b[31mPlease notice that only tissue samples from Homo sapiens can be used by scUmaper::run_scumaper(), meanwhile the gene names used should be Gene Symbol.\u001b[0m")
+  packageStartupMessage("\u001b[31mPlease notice that only tissue samples from Homo sapiens or Mus musculus can be used by scUmaper::run_scumaper(), meanwhile the gene names used should be Gene Symbol.\u001b[0m")
   packageStartupMessage("\u001b[31mFor samples from other species or PBMC, please use scUmaper::run_custom_scumaper() with a prepared list of marker genes.\u001b[0m\n")
   packageStartupMessage("\u001b[31mThis package was written by Guo X. et al. from Zhoulab.\u001b[0m")
   packageStartupMessage("\u001b[31mAll copyrights reserved. \u00A9 2025 Zhoulab.\u001b[0m")
@@ -19,10 +19,11 @@ utils::globalVariables(c("percent.mt", "nFeature_RNA", "cluster", "seurat_cluste
 #' @import Seurat
 #' @import SeuratObject
 #'
-#' @description run_scumaper() is a function for executing scUmaper from raw single cell gene expression matrices of human tissues.
+#' @description run_scumaper() is a function for executing scUmaper from raw single cell gene expression matrices of human or mouse tissues.
 #'
 #' @param input_dir Path of the folder storing raw single cell gene expression matrices. This path should include several folders named by the samples, which should include 3 files named "barcodes.tsv.gz", "features.tsv.gz", and "matrix.mtx.gz".
 #' @param output_dir Path to store output files, defaults to create a new folder named "scUmaper_output" under working directory.
+#' @param species Species of scRNA data, should be "human" or "mouse", defaults to "human".
 #' @param output_plot Whether outputting UMAP plots or not, defaults to TRUE.
 #' @param output_plot_format Format of outputting UMAP plots, should be "png" or "pdf", defaults to "png".
 #' @param n_features Number of feature genes when clustering, defaults to 3000.
@@ -38,6 +39,7 @@ utils::globalVariables(c("percent.mt", "nFeature_RNA", "cluster", "seurat_cluste
 #' @export
 run_scumaper = function(input_dir = NULL,
                         output_dir = NULL,
+                        species = "human",
                         output_plot = TRUE,
                         output_plot_format = "png",
                         n_features = 3000,
@@ -47,6 +49,7 @@ run_scumaper = function(input_dir = NULL,
   #####reading parameters##########################################################
   if(is.null(input_dir)) {cat("Error: `input_dir` parameter cannot be empty. Please type in a valid path.\n"); return()}
   if(!dir.exists(input_dir)) {cat("Error: Please type in a valid `input_dir` path.\n"); return()}
+  if(!(species %in% c("human", "mouse"))) {cat("Error: Only tissue samples from human or mouse are supported in this function. Please use scUmaper::run_custom_scumaper instead.\n"); return()}
   if(is.null(output_dir)) {
     dir.create(path = paste0(getwd(), "/scUmaper_output"))
     output_dir = paste0(getwd(), "/scUmaper_output")
@@ -64,14 +67,28 @@ run_scumaper = function(input_dir = NULL,
   cat("\n", "\u001b[31mStart running scUmaper.\u001b[0m\n\n", sep = "")
 
   cat("\u001b[31m================================================================================\u001b[0m\n\n")
-  ref.df = data.frame("cell_types" = c("B/Plasma_cell", "Endothelial_cell", "Myeloid", "T/NK_cell", "Fibroblast", "Epithelial_cell"),
-                      "markers" = c("CD79A;CD79B;CD19;MS4A1;MZB1;IGHG1;IGHA1",
-                                    "PECAM1;VWF",
-                                    "CD68;CSF3R;TPSAB1",
-                                    "CD3D;CD3E",
-                                    "COL1A1;ACTA2;ACTG2;COL6A3",
-                                    "EPCAM;KRT19;KRT8"),
-                      "mt_threshold" = c(qc_immune, qc_all, qc_immune, qc_immune, qc_all, qc_all))
+
+  if (species == "human") {
+    ref.df = data.frame("cell_types" = c("B/Plasma_cell", "Endothelial_cell", "Myeloid", "T/NK_cell", "Fibroblast", "Epithelial_cell"),
+                        "markers" = c("CD79A;CD79B;CD19;MS4A1;MZB1;IGHG1;IGHA1",
+                                      "PECAM1;VWF",
+                                      "CD68;CSF3R;TPSAB1",
+                                      "CD3D;CD3E",
+                                      "COL1A1;ACTA2;ACTG2;COL6A3",
+                                      "EPCAM;KRT19;KRT8"),
+                        "mt_threshold" = c(qc_immune, qc_all, qc_immune, qc_immune, qc_all, qc_all))
+  } else if (species == "mouse") {
+    ref.df = data.frame("cell_types" = c("B/Plasma_cell", "Endothelial_cell", "Myeloid", "T/NK_cell", "Fibroblast", "Epithelial_cell"),
+                        "markers" = c("Cd79a;Cd19;Ms4a1;Mzb1;Sdc1;Ighg1;Igha;Jchain",
+                                      "Pecam1;Eng;Cdh5",
+                                      "Cd68;Csf3r;S100a8;Mcpt4",
+                                      "CD3d;Cd3e",
+                                      "Col1a1;Col1a2;Acta2;Actg2",
+                                      "Epcam;Krt8;Krt18"),
+                        "mt_threshold" = c(qc_immune, qc_all, qc_immune, qc_immune, qc_all, qc_all))
+  }
+
+
 
   #####read seurats##########################################################
   input.list = list.dirs(path = input_dir, recursive = F, full.names = F) %>% unlist()
@@ -82,7 +99,7 @@ run_scumaper = function(input_dir = NULL,
     temp = Seurat::Read10X(paste(input_dir, each, sep = "/")) %>%
       Seurat::CreateSeuratObject(project = each, min.cells = 3, min.features = 200) %>%
       SeuratObject::RenameCells(new.names = paste(each, rownames(.@meta.data), sep = "_"))
-    temp[["percent.mt"]] = Seurat::PercentageFeatureSet(temp, pattern = "^MT-")
+    temp[["percent.mt"]] = Seurat::PercentageFeatureSet(temp, pattern = "^MT-|^mt-")
     temp = temp %>% subset(percent.mt < qc_all) %>% subset(nFeature_RNA > 200 & nFeature_RNA < 6000) ###Qualification
     if (is.null(sc)) {
       sc = temp
@@ -106,7 +123,7 @@ run_scumaper = function(input_dir = NULL,
     Seurat::NormalizeData(verbose = F) %>%
     Seurat::FindVariableFeatures(nfeatures = n_features, verbose = F) %>%
     Seurat::ScaleData(verbose = F) %>%
-    Seurat::RunPCA(features = setdiff(x = VariableFeatures(.), y = grep("^MT-|^RP[SL]", VariableFeatures(.), value = T)), verbose = F) %>%
+    Seurat::RunPCA(features = setdiff(x = VariableFeatures(.), y = grep("^MT-|^RP[SL]|^mt-|^Rp[sl]", VariableFeatures(.), value = T)), verbose = F) %>%
     Seurat::RunUMAP(reduction = "pca", dims = 1:20, verbose = F) %>%
     Seurat::FindNeighbors(reduction = "pca", dims = 1:20, verbose = F)
 
@@ -187,7 +204,7 @@ run_scumaper = function(input_dir = NULL,
     temp = temp %>% Seurat::NormalizeData() %>%
       Seurat::FindVariableFeatures(nfeatures = 2000, verbose = F) %>%
       Seurat::ScaleData(verbose = F) %>%
-      Seurat::RunPCA(features = setdiff(x = VariableFeatures(.), y = grep("^MT-|^RP[SL]", VariableFeatures(.), value = T)), verbose = F) %>%
+      Seurat::RunPCA(features = setdiff(x = VariableFeatures(.), y = grep("^MT-|^RP[SL]|^mt-|^Rp[sl]", VariableFeatures(.), value = T)), verbose = F) %>%
       Seurat::RunUMAP(reduction = "pca", dims = 1:20, verbose = F) %>%
       Seurat::FindNeighbors(reduction = "pca", dims = 1:20, verbose = F)
 
@@ -232,7 +249,7 @@ run_scumaper = function(input_dir = NULL,
           paste(collapse = ";") %>%
           strsplit(split = ";") %>%
           unlist() %>%
-          c(., "PTPRC")
+          c(., "PTPRC", "Ptprc")
         for (i in levels(temp$seurat_clusters)) {
           if (any(run_markers[run_markers$cluster == i,]$gene %in% impossb.genes)) {
             temp.dbl = subset(temp, seurat_clusters == i)
@@ -250,7 +267,7 @@ run_scumaper = function(input_dir = NULL,
           paste(collapse = ";") %>%
           strsplit(split = ";") %>%
           unlist() %>%
-          c(., "PTPRC")
+          c(., "PTPRC", "Ptprc")
         impossb.genes2 = ref.df[c("Fibroblast", "Endothelial_cell", "Epithelial_cell"), "markers"] %>%
           paste(collapse = ";") %>%
           strsplit(split = ";") %>%
@@ -306,7 +323,7 @@ run_scumaper = function(input_dir = NULL,
     Seurat::NormalizeData(verbose = F) %>%
     Seurat::FindVariableFeatures(nfeatures = n_features, verbose = F) %>%
     Seurat::ScaleData(verbose = F) %>%
-    Seurat::RunPCA(features = setdiff(x = VariableFeatures(.), y = grep("^MT-|^RP[SL]", VariableFeatures(.), value = T)), verbose = F) %>%
+    Seurat::RunPCA(features = setdiff(x = VariableFeatures(.), y = grep("^MT-|^RP[SL]|^mt-|^Rp[sl]", VariableFeatures(.), value = T)), verbose = F) %>%
     Seurat::RunUMAP(reduction = "pca", dims = 1:20, verbose = F) %>%
     Seurat::FindNeighbors(reduction = "pca", dims = 1:20, verbose = F)
   gc()
@@ -360,6 +377,13 @@ run_scumaper = function(input_dir = NULL,
 
   if (output_plot) {
     dir.create(path = paste0(output_dir, "/markers_plot"))
+    if (species == "human") {
+      plotgene = c("PTPRC", "CD3E", "CD79A", "MS4A1", "MZB1", "IGHG1", "IGHA1", "CD68", "CSF3R", "KIT", "TPSAB1",
+                   "EPCAM", "KRT8", "KRT19", "PECAM1", "COL1A1", "ACTA2")
+    } else if (species == "mouse") {
+      plotgene = c("Ptprc", "Cd3e", "Cd79a", "Ms4a1", "Mzb1", "Ighg1", "Igha", "Cd68", "Csf3r", "Kit", "Mcpt4",
+                   "Epcam", "Krt8", "Krt18", "Pecam1", "Col1a1", "Acta2")
+    }
     if (output_plot_format == "pdf") {
       temp.p = Seurat::DimPlot(sc,
                                reduction = "umap",
@@ -378,8 +402,7 @@ run_scumaper = function(input_dir = NULL,
       print(temp.p)
       grDevices::dev.off()
 
-      for (each in c("PTPRC", "CD3E", "CD79A", "MS4A1", "MZB1", "IGHG1", "IGHA1", "CD68", "CSF3R", "KIT", "TPSAB1",
-                     "EPCAM", "KRT8", "KRT19", "PECAM1", "COL1A1", "ACTA2")) {
+      for (each in plotgene) {
         temp.p = Seurat::FeaturePlot(sc,
                                      features = each,
                                      cols = c("lightgrey","red"),
@@ -407,8 +430,7 @@ run_scumaper = function(input_dir = NULL,
         theme(aspect.ratio = 1)
       ggplot2::ggsave(filename = paste0(output_dir, "/final_umap.png"), plot = temp.p, height = 6, width = 7.5)
 
-      for (each in c("PTPRC", "CD3E", "CD79A", "MS4A1", "MZB1", "IGHG1", "IGHA1", "CD68", "CSF3R", "KIT", "TPSAB1",
-                     "EPCAM", "KRT8", "KRT19", "PECAM1", "COL1A1", "ACTA2")) {
+      for (each in plotgene) {
         temp.p = Seurat::FeaturePlot(sc,
                                      features = each,
                                      cols = c("lightgrey","red"),

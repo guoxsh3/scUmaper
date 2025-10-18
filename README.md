@@ -26,7 +26,7 @@ devtools::install_github("guoxsh3/scUmaper")
 
 Please make sure:
 
--   Currently, only tissue samples from *Homo sapiens* (human) can be analyzed directly from raw matrices through *scUmaper::run_scumaper* function.
+-   Currently, only tissue samples from *Homo sapiens* (human) or *Mus musculus* (mouse) can be analyzed directly from raw matrices through *scUmaper::run_scumaper* function.
 
 -   Input format of *scUmaper::run_scumaper* is similar to the output of CellRanger. Three files, named "barcodes.tsv.gz", "features.tsv.gz", and "matrix.mtx.gz", should be included in a folder named by each sample.
 
@@ -40,12 +40,13 @@ Please make sure:
 
 ## **Usage**
 
-### For samples of human tissue
+### For samples of human or mouse tissue
 
 ``` r
 library(scUmaper)
 run_scumaper(input_dir = NULL,
              output_dir = NULL,
+             species = "human",
              output_plot = TRUE,
              output_plot_format = "png",
              n_features = 3000,
@@ -61,6 +62,8 @@ Required arguments:
 Optional arguments:
 
 -   output_dir: Path to store output files, defaults to create a new folder named "scUmaper_output" under working directory.
+
+-   species: Species of used data, should be "human" or "mouse", defaults to "human".
 
 -   output_plot: Whether outputting UMAP plots or not, defaults to TRUE.
 
@@ -78,7 +81,7 @@ Quick start:
 
 ``` r
 library(scUmaper)
-run_scumaper('path/to/input')
+run_scumaper(input_dir = 'path/to/input', species = "human")
 ```
 
 ### For other samples with customized marker genes
@@ -117,8 +120,7 @@ genelist = list("B/Plasma_cell" = c('CD79A', 'CD79B', 'CD19', 'MS4A1', 'MZB1', '
                 "T/NK_cell" = c('CD3D', 'CD3E'),
                 "Fibroblast" = c('COL1A1', 'ACTA2', 'ACTG2', 'COL6A3'),
                 "Epithelial_cell" = c('EPCAM', 'KRT19', 'KRT8'))
-run_custom_scumaper(scRNA, 
-                    genelist)
+run_custom_scumaper(scRNA, genelist)
 ```
 
 ## **Hints**
@@ -135,18 +137,18 @@ run_custom_scumaper(scRNA,
 
 If you find our work helpful in your research or work, please cite us.
 
-X. Guo, G. Zhou. scUmaper: An Automated Tool for Doublet Removal and Cell Type Annotation in scRNA-Seq Data. Under review, 2025.
+X. Guo, et al. scUmaper: An Automated Tool for Doublet Removal and Cell Type Annotation in scRNA-Seq Data. Under review, 2025.
 
 ## **Questions & Problems**
 
-If you have any questions or problems for code questions, please contact Xushun Guo.
+If you have any questions or problems for code questions, please contact Dr. Xushun Guo.
 
--   Xushun Guo (guoxsh3\@mail2.sysu.edu.cn)\
-    MD, Resident Doctor,\
-    Zhongshan School of Medicine, Sun Yat-sen University, Canton, China.
+-   Xushun Guo (guoxsh3\@mail3.sysu.edu.cn)\
+    MD, Independent Researcher,\
+    scUmaper Project Community, Shenzhen, China.
 
-For any other further questions or requests, please contact Gaoshi Zhou, the Principle Investigator of our bioinfomatic lab.
+For any other further questions or requests, please contact Dr. Gaoshi Zhou, the Principle Investigator of our bioinfomatic lab.
 
--   Gaoshi Zhou (zhougshi\@mail2.sysu.edu.cn)\
+-   Gaoshi Zhou (zhougshi\@mail3.sysu.edu.cn)\
     MD, Research Associate, Resident Doctor,\
     The First Affiliated Hospital, Sun Yat-sen University, Canton, China.

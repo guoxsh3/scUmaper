@@ -1,15 +1,14 @@
 Package: scUmaper
 Type: Package
 Title: Single Cell Utility Matrices Processing Engine in R
-Version: 0.1.7
-Authors@R: c(person(given="Xushun",family="Guo",role="aut",email="guoxsh3@mail2.sysu.edu.cn"),
+Version: 0.2.0
+Authors@R: c(person(given="Xushun",family="Guo",role="aut",email="guoxsh3@mail3.sysu.edu.cn"),
   person(given="Jinzhe",family="Huang",role="aut"),
-  person(given="Zhuohui",family="Wu",role="aut"),
-  person(given="Gaoshi",family="Zhou",role=c("aut","cre"),email="zhougshi@mail2.sysu.edu.cn"))
-Maintainer: Gaoshi Zhou <zhougshi@mail2.sysu.edu.cn>
+  person(given="Gaoshi",family="Zhou",role=c("aut","cre"),email="zhougshi@mail3.sysu.edu.cn"))
+Maintainer: Gaoshi Zhou <zhougshi@mail3.sysu.edu.cn>
 Description: Single Cell Utility Matrices Processing Engine in R (scUmaper) package, is designed for helping researchers with less experience in bioinformatics to process single cell transcriptomics sequencing data. 
     scUmaper can automatically remove doublets and annotate cell clusters with high reliability by supervising biological markers, which are bases of single cell sequence analyses.
-    Raw gene expression matrices of single cell sequences of human tissues can be directly used to analyze, avoiding errors due to inappropriate intermediate procedures.
+    Raw gene expression matrices of single cell sequences of human or mouse tissues can be directly used to analyze, avoiding errors due to inappropriate intermediate procedures.
     Opitionally, processed Seurat objects can also be used by scUmaper, while users can define customized marker genes in this mode.
     All copyrights reserved. © 2025 Zhoulab.
 License: MIT + file LICENSE
