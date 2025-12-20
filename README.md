@@ -30,11 +30,24 @@ Please make sure:
 
 -   Input format of *scUmaper::run_scumaper* is similar to the output of CellRanger. Three files, named "barcodes.tsv.gz", "features.tsv.gz", and "matrix.mtx.gz", should be included in a folder named by each sample.
 
--   Gene symbols, i.e. "PTPRC", are avaliable in "features.tsv.gz" files.
+-   Gene symbols, i.e. "PTPRC" or "Ptprc", should be avaliable in "features.tsv.gz" files.
 
--   The folders of each sample should be included in same parent folder, whose directory will be the input of scUmaper.
+-   The folders of each sample should be included in same parent folder, whose directory will be the input of scUmaper. The file structure should be as follows:
 
--   Samples from other species, i.e. *Mus musculus* (mouse), or PBMC samples, are only supported by processed Seurat objects through *scUmaper::run_custom_scumaper* function. Meanwhile, users should provide a customized list of marker genes to use.
+    ``` bash
+    /path/to/input/
+    ├── Sample1/
+    │   ├── barcodes.tsv.gz
+    │   ├── features.tsv.gz
+    │   └── matrix.mtx.gz
+    ├── Sample2/
+    │   ├── barcodes.tsv.gz
+    │   ├── features.tsv.gz
+    │   └── matrix.mtx.gz
+    └── ...
+    ```
+
+-   Samples from other species, or PBMC samples, are only supported by processed Seurat objects through *scUmaper::run_custom_scumaper* function. Meanwhile, users should provide a customized list of marker genes to use.
 
 -   Your Seurat package has a version \>= 5.0.0.
 
@@ -69,7 +82,7 @@ Optional arguments:
 
 -   output_plot_format: Format of outputting UMAP plots, should be "png" or "pdf", defaults to "png".
 
--   n_features: Number of feature genes when clustering, defaults to 3000. Recommend 1000 to 3000.
+-   n_features: Number of feature genes when clustering, defaults to 3000. Recommend 1000 to 4000.
 
 -   qc_all: Quality control standard of all cells, the cells above how many percentage of mitochondrial gene expression will be removed, defaults to 25. Recommend up to 25.
 
@@ -81,7 +94,7 @@ Quick start:
 
 ``` r
 library(scUmaper)
-run_scumaper(input_dir = 'path/to/input', species = "human")
+run_scumaper(input_dir = "path/to/input", species = "human")
 ```
 
 ### For other samples with customized marker genes
