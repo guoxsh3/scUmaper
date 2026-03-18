@@ -157,8 +157,8 @@ X. Guo, et al. scUmaper: An Automated Tool for Doublet Removal and Cell Type Ann
 If you have any questions or problems for code questions, please contact Dr. Xushun Guo.
 
 -   Xushun Guo (guoxsh3\@mail3.sysu.edu.cn)\
-    MD, Independent Researcher,\
-    scUmaper Project Community, Shenzhen, China.
+    MD, Resident Doctor,\
+    Guangxi Hospital Division of The First Affiliated Hospital, Sun Yat-sen University, Nanning, China.
 
 For any other further questions or requests, please contact Dr. Gaoshi Zhou, the Principle Investigator of our bioinfomatic lab.
 
