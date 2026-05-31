@@ -1,10 +1,12 @@
 # **scUmaper: Single Cell Utility Matrices Processing Engine in R**
 
+## **Introduction**
+
+scUmaper is an R package designed to streamline the processing of single-cell transcriptomics sequencing data. It automatically removes heterotypic doublets and annotates major cell lineages with high reliability by supervising biological markers. It allows researchers to process raw 10x Genomics gene expression matrices directly, bypassing complex intermediate steps and avoiding potential analytical errors.
+
 ## **Requirements and Installation**
 
 scUmaper is implemented by R. Make sure your R version \>= 4.3.0. The packages below are required for scUmaper:
-
--   tibble
 
 -   dplyr
 
@@ -16,6 +18,8 @@ scUmaper is implemented by R. Make sure your R version \>= 4.3.0. The packages b
 
 -   SeuratObject \>= 5.0.0
 
+-   presto
+
 Download and install scUmaper:
 
 ``` r
@@ -24,15 +28,13 @@ devtools::install_github("guoxsh3/scUmaper")
 
 ## **Before you start**
 
-Please make sure:
+Please review the following requirements before running the pipeline:
 
--   Currently, only tissue samples from *Homo sapiens* (human) or *Mus musculus* (mouse) can be analyzed directly from raw matrices through *scUmaper::run_scumaper* function.
+-   **Supported Species:** Currently, only tissue samples from *Homo sapiens* (human) or *Mus musculus* (mouse) can be analyzed directly from raw matrices using the `run_scumaper` function.
 
--   Input format of *scUmaper::run_scumaper* is similar to the output of CellRanger. Three files, named "barcodes.tsv.gz", "features.tsv.gz", and "matrix.mtx.gz", should be included in a folder named by each sample.
+-   **Input Format:** The input format is standard 10x Genomics Cell Ranger output. Three files, `barcodes.tsv.gz`, `features.tsv.gz`, and `matrix.mtx.gz` (or their unzipped versions), must be included in a subfolder named after each sample.
 
--   Gene symbols, i.e. "PTPRC" or "Ptprc", should be avaliable in "features.tsv.gz" files.
-
--   The folders of each sample should be included in same parent folder, whose directory will be the input of scUmaper. The file structure should be as follows:
+-   **Directory Structure:** The subfolders for each sample must be placed within a single parent directory. The path to this parent directory will be the `input_dir` argument. The file structure should look like this:
 
     ``` bash
     /path/to/input/
@@ -47,16 +49,24 @@ Please make sure:
     └── ...
     ```
 
--   Samples from other species, or PBMC samples, are only supported by processed Seurat objects through *scUmaper::run_custom_scumaper* function. Meanwhile, users should provide a customized list of marker genes to use.
+-   **Gene Naming**: Gene symbols (e.g., `"PTPRC"` for human or `"Ptprc"` for mouse) must be used in your `features.tsv.gz` files.
 
--   Your Seurat package has a version \>= 5.0.0.
+-   **Custom Mode**: Samples from other species or PBMC samples are supported via the `run_custom_scumaper` function. In this mode, users must provide a pre-processed Seurat object and a customized list of marker genes.
 
 ## **Usage**
 
-### For samples of human or mouse tissue
+### 1. For Raw Human or Mouse Tissue Samples
 
 ``` r
 library(scUmaper)
+
+# Quick Start
+run_scumaper(input_dir = "path/to/input", species = "human")
+```
+
+**Full Arguments:**
+
+``` r
 run_scumaper(input_dir = NULL,
              output_dir = NULL,
              species = "human",
@@ -68,39 +78,46 @@ run_scumaper(input_dir = NULL,
              doublet_reserve = FALSE)
 ```
 
-Required arguments:
+-   `input_dir` *(Required)*: Path to the parent directory containing sample subfolders.
 
--   input_dir: Path of the folder storing raw single cell gene expression matrices.
+-   `output_dir` *(Optional)*: Path to store output files. Defaults to creating a `scUmaper_output` folder in the current working directory.
 
-Optional arguments:
+-   `species` *(Optional)*: Species of the data, either `"human"` or `"mouse"`. Defaults to `"human"`.
 
--   output_dir: Path to store output files, defaults to create a new folder named "scUmaper_output" under working directory.
+-   `output_plot` *(Optional)*: Logical. Whether to output UMAP plots. Defaults to `TRUE`.
 
--   species: Species of used data, should be "human" or "mouse", defaults to "human".
+-   `output_plot_format` *(Optional)*: Format for UMAP plots, either `"png"` or `"pdf"`. Defaults to `"png"`.
 
--   output_plot: Whether outputting UMAP plots or not, defaults to TRUE.
+-   `n_features` *(Optional)*: Number of highly variable genes (HVGs) used for clustering. Defaults to `3000`. Recommended range: 1000 to 4000.
 
--   output_plot_format: Format of outputting UMAP plots, should be "png" or "pdf", defaults to "png".
+-   `qc_all` *(Optional)*: Mitochondrial percentage cutoff for all cells. Cells exceeding this threshold are removed. Defaults to `25`. Recommended range: 10 to 25.
 
--   n_features: Number of feature genes when clustering, defaults to 3000. Recommend 1000 to 4000.
+-   `qc_immune` *(Optional)*: Mitochondrial percentage cutoff for immune cells. Defaults to `5`. Recommended range: 5 to 10.
 
--   qc_all: Quality control standard of all cells, the cells above how many percentage of mitochondrial gene expression will be removed, defaults to 25. Recommend up to 25.
+-   `doublet_reserve` *(Optional)*: Logical. Whether to save the removed doublets as a separate `.rds` Seurat object. Defaults to `FALSE`. Recommended to set as `TRUE` for experienced analysts.
 
--   qc_immune: Quality control standard of immune cells, the cells above how many percentage of mitochondrial gene expression will be removed, defaults to 5. Recommend up to 10.
-
--   doublet_reserve: Whether reserving doublet cells as another Seurat object, defaults to FALSE. Recommend TRUE if you are experienced in single cell analysis.
-
-Quick start:
+### 2. For Other Samples with Customized Marker Genes
 
 ``` r
 library(scUmaper)
-run_scumaper(input_dir = "path/to/input", species = "human")
+
+# Quick Start Example
+
+genelist <- list(
+  "B/Plasma_cell" = c('CD79A', 'CD79B', 'CD19', 'MS4A1', 'MZB1', 'IGHG1', 'IGHA1'),
+  "Endothelial_cell" = c('PECAM1', 'VWF'),
+  "Myeloid" = c('CD68', 'CSF3R', 'TPSAB1'),
+  "T/NK_cell" = c('CD3D', 'CD3E'),
+  "Fibroblast" = c('COL1A1', 'ACTA2', 'ACTG2', 'COL6A3'),
+  "Epithelial_cell" = c('EPCAM', 'KRT19', 'KRT8')
+)
+
+run_custom_scumaper(input_seurat = scRNA_object, input_genelist = genelist)
 ```
 
-### For other samples with customized marker genes
+**Full Arguments:**
 
 ``` r
-library(scUmaper)
 run_custom_scumaper(input_seurat = NULL,
                     input_genelist = NULL,
                     output_dir = NULL,
@@ -110,58 +127,38 @@ run_custom_scumaper(input_seurat = NULL,
                     doublet_reserve = FALSE)
 ```
 
-Required arguments:
+-   `input_seurat` *(Required)*: A pre-built Seurat object to be processed.
 
--   input_seurat: Seurat object to remove doublets and annotate.
--   input_genelist: A list of several vectors, which named by target clusters and composed of corresponding marker genes.
+-   `input_genelist` *(Required)*: A named list of character vectors, where names are the target cell clusters and vectors contain the corresponding marker genes.
 
-Optional arguments:
+## **Hints & Best Practices**
 
--   output_dir: Path to store output files, defaults to create a new folder named "scUmaper_output" under working directory.
--   output_plot: Whether outputting UMAP plots or not, defaults to TRUE.
--   output_plot_format: Format of outputting UMAP plots, should be "png" or "pdf", defaults to "png".
--   n_features: Number of feature genes when clustering, defaults to 3000.
--   doublet_reserve: Whether reserving doublet cells as another Seurat object, defaults to FALSE.
+-   **Computational Resources**: Running scUmaper on datasets exceeding 100,000 cells can be memory-intensive and time-consuming. We highly recommend running scUmaper on a Linux-based server with at least 64 GB of RAM. Executing the script as a background job (e.g., using `nohup Rscript script.R &`) is also advised.
 
-Quick start:
+-   **Strict Doublet Removal**: scUmaper employs a highly strict standard to preserve pure singlets. Consequently, some edge-case singlets might be mislabeled as doublets and removed. For experienced analysts, we recommend setting `doublet_reserve = TRUE`. You can manually inspect the removed doublets and merge any mislabeled singlets back into your final dataset.
 
-``` r
-library(scUmaper)
-genelist = list("B/Plasma_cell" = c('CD79A', 'CD79B', 'CD19', 'MS4A1', 'MZB1', 'IGHG1', 'IGHA1'),
-                "Endothelial_cell" = c('PECAM1', 'VWF'),
-                "Myeloid" = c('CD68', 'CSF3R', 'TPSAB1'),
-                "T/NK_cell" = c('CD3D', 'CD3E'),
-                "Fibroblast" = c('COL1A1', 'ACTA2', 'ACTG2', 'COL6A3'),
-                "Epithelial_cell" = c('EPCAM', 'KRT19', 'KRT8'))
-run_custom_scumaper(scRNA, genelist)
-```
-
-## **Hints**
-
--   Running scUmaper might require a long duration, especially when you input cells over 100,000. Executing scUmaper as a background R job through *nohup* and *Rscript* commands could save your time.
-
--   scUmaper might need a large RAM space over 32 GBs, especially when you input cells over 100,000. Make sure your server or PC have enough RAM. Recommend run scUmaper in a linux-based server with RAM larger than 64 GBs.
-
--   scUmaper follows a extremely strict standard to keep singlets. Therefore, some singlets might be mis-labelled as doublets and removed. For experienced analyst, *doublet_reserve* argument is recommended to TRUE. After automatic analysis, the operator could exterminate the doublets manually, and merge mis-labelled singlets into auto-labelled singlets for further analysis.
-
--   When using *scUmaper::run_custom_scumaper* function, inputting a Seurat object quality-controlled by expression of mitochondrial genes might improve the effectiveness of doublet-removal and annotation.
+-   **Custom Mode Input**: When using `run_custom_scumaper`, inputting a Seurat object that has already been quality-controlled (e.g., filtering out high-mitochondrial cells) will significantly improve the accuracy of doublet removal and cell type annotation.
 
 ## **Citation**
 
-If you find our work helpful in your research or work, please cite us.
+If you find scUmaper helpful in your research, please cite our publication:
 
-X. Guo, et al. scUmaper: An Automated Tool for Doublet Removal and Cell Type Annotation in scRNA-Seq Data. Under review, 2025.
+Guo X, Zhang M, Xie Z, Wang Y, Zhang S, Zhou G. **scUmaper: An automated framework for doublet removal and cell-type annotation in single-cell transcriptomics**. *iScience*. 2026;29(6):115850. <doi:10.1016/j.isci.2026.115850>. PMID: 42164849.
 
-## **Questions & Problems**
+## **Contact & Support**
 
-If you have any questions or problems for code questions, please contact Dr. Xushun Guo.
+If you encounter any code-related issues or have questions regarding the software, please contact:
 
--   Xushun Guo (guoxsh3\@mail3.sysu.edu.cn)\
-    MD, Resident Doctor,\
+-   **Dr. Xushun Guo** (guoxsh3\@mail3.sysu.edu.cn)
+
+    MD, Resident Doctor,
+
     Guangxi Hospital Division of The First Affiliated Hospital, Sun Yat-sen University, Nanning, China.
 
-For any other further questions or requests, please contact Dr. Gaoshi Zhou, the Principle Investigator of our bioinfomatic lab.
+For other inquiries or collaboration requests, please contact the Principal Investigator of our bioinformatics lab:
 
--   Gaoshi Zhou (zhougshi\@mail3.sysu.edu.cn)\
-    MD, Research Associate, Resident Doctor,\
-    The First Affiliated Hospital, Sun Yat-sen University, Canton, China.
+-   **Dr. Gaoshi Zhou** (zhougshi\@mail3.sysu.edu.cn)
+
+    MD, Research Associate, Resident Doctor,
+
+    The First Affiliated Hospital, Sun Yat-sen University, Guangzhou, China.

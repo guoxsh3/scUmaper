@@ -2,11 +2,12 @@
 % Please edit documentation in R/scUmaper.R
 \name{run_scumaper}
 \alias{run_scumaper}
-\title{run_scumaper}
+\title{Run scUmaper on raw 10x scRNA-seq data of human or mouse tissues}
 \usage{
 run_scumaper(
   input_dir = NULL,
   output_dir = NULL,
+  species = "human",
   output_plot = TRUE,
   output_plot_format = "png",
   n_features = 3000,
@@ -16,30 +17,32 @@ run_scumaper(
 )
 }
 \arguments{
-\item{input_dir}{Path of the folder storing raw single cell gene expression matrices. This path should include several folders named by the samples, which should include 3 files named "barcodes.tsv.gz", "features.tsv.gz", and "matrix.mtx.gz".}
+\item{input_dir}{Folder containing per-sample subfolders with 10x output format.}
 
-\item{output_dir}{Path to store output files, defaults to create a new folder named "scUmaper_output" under working directory.}
+\item{output_dir}{Output folder. Default creates "scUmaper_output" under getwd().}
 
-\item{output_plot}{Whether outputting UMAP plots or not, defaults to TRUE.}
+\item{species}{Either "human" or "mouse".}
 
-\item{output_plot_format}{Format of outputting UMAP plots, should be "png" or "pdf", defaults to "png".}
+\item{output_plot}{Whether to output UMAP plots.}
 
-\item{n_features}{Number of feature genes when clustering, defaults to 3000.}
+\item{output_plot_format}{Either "png" or "pdf".}
 
-\item{qc_all}{Quality control standard of all cells, the cells above how many percentage of mitochondrial gene expression will be removed, defaults to 25.}
+\item{n_features}{Number of HVGs (default 3000). PCA dims auto-set to round(n_features/100), clamped to [10,40].}
 
-\item{qc_immune}{Quality control standard of immune cells, the cells above how many percentage of mitochondrial gene expression will be removed, defaults to 5.}
+\item{qc_all}{Mitochondrial percent cutoff for all cells (default 25).}
 
-\item{doublet_reserve}{Whether reserving doublet cells as another Seurat object, defaults to FALSE.}
+\item{qc_immune}{Mitochondrial percent cutoff for immune cells (default 5).}
+
+\item{doublet_reserve}{Whether to also save the removed doublets as an RDS.}
+}
+\value{
+Invisibly returns the singlet Seurat object; results also saved to output_dir.
 }
 \description{
-run_scumaper() is a function for executing scUmaper from raw single cell gene expression matrices of human tissues.
-}
-\details{
-run_scumaper
+Run scUmaper on raw 10x scRNA-seq data of human or mouse tissues
 }
 \examples{
 \dontshow{if (interactive()) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
-run_scumaper(input_dir = 'path/to/input', output_dir = 'path/to/output')
+run_scumaper(input_dir = "path/to/input", output_dir = "path/to/output")
 \dontshow{\}) # examplesIf}
 }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/scUmaper.R
 \name{run_custom_scumaper}
 \alias{run_custom_scumaper}
-\title{run_custom_scumaper}
+\title{Run scUmaper with user-defined marker libraries (custom mode)}
 \usage{
 run_custom_scumaper(
   input_seurat = NULL,
@@ -15,28 +15,30 @@ run_custom_scumaper(
 )
 }
 \arguments{
-\item{input_seurat}{Seurat object to remove doublets and annotate.}
+\item{input_seurat}{A pre-built Seurat object as input.}
 
-\item{input_genelist}{A list of several vectors, which named by target clusters and composed of corresponding marker genes.}
+\item{input_genelist}{Named list of marker gene character vectors per cell type.}
 
-\item{output_dir}{Path to store output files, defaults to create a new folder named "scUmaper_output" under working directory.}
+\item{output_dir}{Output folder. Default creates "scUmaper_output" under getwd().}
 
-\item{output_plot}{Whether outputting UMAP plots or not, defaults to TRUE.}
+\item{output_plot}{Whether to output UMAP plots.}
 
-\item{output_plot_format}{Format of outputting UMAP plots, should be "png" or "pdf", defaults to "png".}
+\item{output_plot_format}{Either "png" or "pdf".}
 
-\item{n_features}{Number of feature genes when clustering, defaults to 3000.}
+\item{n_features}{Number of HVGs (default 3000). PCA dims auto-set to round(n_features/100), clamped to [10,40].}
 
-\item{doublet_reserve}{Whether reserving doublet cells as another Seurat object, defaults to FALSE.}
+\item{doublet_reserve}{Whether to save the removed doublets as an RDS.}
+}
+\value{
+Invisibly returns the singlet Seurat object.
 }
 \description{
-run_custom_scumaper() is a function for executing scUmaper from processed Seurat objects, while users can customize the marker genes to use.
-}
-\details{
-run_custom_scumaper
+Run scUmaper with user-defined marker libraries (custom mode)
 }
 \examples{
 \dontshow{if (interactive()) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
-run_scumaper(input_seurat = scRNA, input_genelist = list("T_cell" = c("CD3D", "CD3E"), "Plasma_cell" = c("MZB1", "JCHAIN")), output_dir = 'path/to/output')
+run_custom_scumaper(input_seurat = scRNA,
+                    input_genelist = list(T_cell = c("CD3D","CD3E"),
+                                          Plasma  = c("MZB1","JCHAIN")))
 \dontshow{\}) # examplesIf}
 }
